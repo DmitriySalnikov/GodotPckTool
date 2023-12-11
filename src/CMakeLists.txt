@@ -20,14 +20,23 @@ add_executable(godotpcktool main.cpp)
 target_link_libraries(godotpcktool PRIVATE pck)
 
 # Static standard lib
-target_link_libraries(godotpcktool PRIVATE -static-libgcc -static-libstdc++)
+if(APPLE)
+  target_link_libraries(godotpcktool PRIVATE)
+else()
+  target_link_libraries(godotpcktool PRIVATE -static-libgcc -static-libstdc++)
+endif()
+
 
 # Fully static executable
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   target_link_libraries(godotpcktool PRIVATE -static)
 endif()
 
-if(NOT WIN32)
+if(APPLE)
+  set_target_properties(godotpcktool PROPERTIES LINK_FLAGS_RELEASE "-s -fuse-ld=ld")
+  set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
+elseif(NOT WIN32)
   set_target_properties(godotpcktool PROPERTIES LINK_FLAGS_RELEASE "-s -fuse-ld=gold")
 else()
   set_target_properties(godotpcktool PROPERTIES LINK_FLAGS_RELEASE "-s")
